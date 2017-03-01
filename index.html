@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+
+<html>
+
+	<head>
+		<title>Trabalho 1 de Sistemas Operacionais 2016.2 - UFBA</title>
+		<meta charset="utf-8">
+		<link rel="stylesheet" href="./node_modules/bootstrap/dist/css/bootstrap.min.css">
+		<link rel="stylesheet" href="./style.css">
+	</head>
+
+	<body>
+
+		<header class="container-fluid">
+			<h1 class="header-title">Hello, world!</h1>
+		</header>
+
+		<br>
+
+		<main class="container">
+
+			<p><i>unidade de tempo: 1s</i></p>
+
+			<hr>
+			<br>
+
+			<form action="" method="POST" id="quantum-form">
+				<fieldset>
+					<legend>Valor de Quantum</legend>
+					<input type="text" name="quantum" id="quantum" placeholder="quantum">
+					<input type="submit" value="Adicionar">
+				</fieldset>
+			</form>
+
+			<form action="" method="POST" id="processo-form">
+				<fieldset>
+					<legend>Dados do Processo</legend>
+					<input type="text" name="nome"  id="nome" placeholder="nome" required="required">
+					<input type="text" name="chegada"  id="chegada" placeholder="chegada" required="required">
+					<input type="text" name="tempoExecucao"  id="tempoExecucao" placeholder="tempo de execução" required="required">
+					<input type="text" name="prioridade"  id="prioridade" placeholder="prioridade">
+					<input type="text" name="deadline"  id="deadline" placeholder="deadline">
+					<input type="submit" value="Adicionar">
+				</fieldset>
+			</form>
+
+			<form action="" method="POST" id="algoritmo-form">
+				<fieldset>
+					<legend>Algoritmo de Escalonamento</legend>
+					<select name="algoritmos" id="algoritmos">
+						<option value="1" title="First In, First Out">FIFO</option>
+						<option value="2" title="Smallest Job First">SJF</option>
+						<option value="3" title="Round-Robin">RR</option>
+						<option value="4" title="Earliest Deadline First">EDF</option>
+					</select>
+					<input type="submit" value="Rodar">
+				</fieldset>
+			</form>
+
+			<br><br>
+
+			<div id="fila-de-processos">
+
+				<h3>Fila de Processos</h3>
+
+				<hr>
+			</div>
+		</main>
+
+		<br>
+
+		<footer>
+			<script src="./node_modules/jquery/dist/jquery.min.js"></script>
+			<script src="./node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+			<script src="./node_modules/chart.js/dist/Chart.bundle.min.js"></script>
+			<script src="./index.js"></script>
+		</footer>
+	</body>
+</html>
