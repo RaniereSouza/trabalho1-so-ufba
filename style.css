@@ -1,3 +1,8 @@
+header {
+	background-color: blue;
+	color: #fff;
+}
+
 .processo-wrapper {
 	border:  1px solid #ccc;
 	padding: 15px;

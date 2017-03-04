@@ -79,39 +79,72 @@ $(document).ready(function () {
 				console.log('Smallest Job First!');
 
 				let escalonamentoArray = [],
-					//processosExecucao = [],
+					processosExecucao = [],
 					cicloAtual = 0,
-					indexAtual = 0;
+					indexAtual = null;
 
 				processosArrayCopia.sort(function (a, b) {
 
 					return (a.chegada - b.chegada);
 				});
 
-				processosArrayCopia[0].estado = 'executando';
+				//processosArrayCopia[0].estado = 'executando';
+
+				let porTempoExecucao = function (a, b) {
+
+						return (a.tempoExecucao - b.tempoExecucao);
+					};
+
+				//escalonamentoArray.push(processosArrayCopia[1]);
 
 				while (processosParaExecutar > 0) {
 
-					processosArrayCopia.map(function (e, index) {
+					processosArrayCopia.map(function (element, index) {
 
-						let element = e;
+						if ((element.chegada <= cicloAtual)) {
 
-						if ((element.chegada <= cicloAtual) &&
-						   (element.estado !== 'finalizado')) {
+							if (element.estado === 'criado') {
 
-							if (element.estado === 'pronto') {
+								element.estado = 'pronto';
 
-								element.emEspera++;
+								escalonamentoArray.push(element);
+
+								escalonamentoArray.sort(porTempoExecucao);
+
+								//element.emEspera++;
 							}
-							else if () {
+							else if (element.estado === 'pronto') {
 
-								element.jaExecutado++;
+								if (((indexAtual === null) ||
+								   (processosArrayCopia[indexAtual].estado === 'finalizado')) &&
+								   (escalonamentoArray[0].nome === element.nome)) {
+
+									indexAtual = index;
+
+									escalonamentoArray.splice(0, 1);
+
+									element.estado = 'executando';
+
+									element.jaExecutado++;
+								}
+								else {
+
+									element.emEspera++;
+								}
+							}
+							else if (element.estado === 'executando') {
 
 								if (element.jaExecutado === element.tempoExecucao) {
 
 									element.estado = 'finalizado';
 
+									processosExecucao.push(element);
+
 									processosParaExecutar--;
+								}
+								else {
+
+									element.jaExecutado++;
 								}
 							}
 						}
@@ -119,6 +152,8 @@ $(document).ready(function () {
 
 					cicloAtual++;
 				}
+
+				console.log(processosExecucao);
 			}
 			else if (algoritmo == '3') {
 
