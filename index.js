@@ -1,10 +1,10 @@
 $(document).ready(function () {
 
-	let processosArray = []
+	let processosArray = [],
 		quantum = 3,
 		ctx = $('#grafico-de-execucao')[0].getContext('2d');
 
-	let scatterChart = new Chart(ctx, {
+	let myChart = new Chart(ctx, {
 		    type: 'line',
 		    data: {
 		        datasets: [
@@ -94,6 +94,20 @@ $(document).ready(function () {
 		    }
 		});
 
+
+
+	function cloneArray (array) {
+
+		let result = array.map(function (element) {
+
+				return 	jQuery.extend(true, {}, element);
+			});
+
+		return result;
+	}
+
+
+
 	$('.header-title').text('Trabalho de SO - Escalonamento de Processos');
 
 
@@ -123,11 +137,11 @@ $(document).ready(function () {
 			};
 
 		$('#fila-de-processos').append('<div class="processo-wrapper">' +
-			                               '<p>Nome: '+ processoObj.nome +'</p>' +
-			                               '<p>Chegada: '+ processoObj.chegada +'</p>' +
-			                               '<p>Tempo de execução: '+ processoObj.tempoExecucao +'</p>' +
-			                               //'<p>Prioridade: '+ processoObj.prioridade +'</p>' +
-			                               '<p>Deadline: '+ processoObj.deadline +'</p>' +
+			                               '<p>Nome: ' + processoObj.nome + '</p>' +
+			                               '<p>Chegada: ' + processoObj.chegada + '</p>' +
+			                               '<p>Tempo de execução: ' + processoObj.tempoExecucao + '</p>' +
+			                               //'<p>Prioridade: ' + processoObj.prioridade + '</p>' +
+			                               '<p>Deadline: ' + processoObj.deadline + '</p>' +
 			                           '</div>');
 
 		processosArray.push(processoObj);
@@ -143,8 +157,10 @@ $(document).ready(function () {
 
 		e.preventDefault();
 
+		console.log('fila de processos:', processosArray);
+
 		let processosParaExecutar = processosArray.length,
-			processosArrayCopia = processosArray.slice(0); //tentativa de manter o array original intacto para a axecução de outros algoritmos
+			processosArrayCopia = cloneArray(processosArray); //tentativa de manter o array original intacto para a axecução de outros algoritmos
 
 		let porChegada = function (a, b) {
 
@@ -153,6 +169,10 @@ $(document).ready(function () {
 			porTempoExecucao = function (a, b) {
 
 				return (a.tempoExecucao - b.tempoExecucao);
+			},
+			porDeadline = function (a, b) {
+
+				return (a.deadline - b.deadline);
 			};
 
 		if (processosParaExecutar > 0) {
@@ -164,11 +184,11 @@ $(document).ready(function () {
 
 				console.log('First In, First Out!');
 
-				let processosExecucao = processosArrayCopia;
+				let processosExecucao = cloneArray(processosArrayCopia);
 
 				processosExecucao.sort(porChegada);
 
-				processosExecucao.map(function (element, index) {
+				processosExecucao.forEach(function (element, index) {
 
 					//let element = e;
 
@@ -191,7 +211,7 @@ $(document).ready(function () {
 
 				let tempoMedio = 0;
 
-				processosExecucao.map(function (element) {
+				processosExecucao.forEach(function (element) {
 
 					tempoMedio += element.emEspera + element.jaExecutado;
 				});
@@ -200,7 +220,7 @@ $(document).ready(function () {
 
 				console.log('tempo médio:', tempoMedio, 'u.t.');
 
-				processosArrayCopia = processosArray.slice(0);
+				processosArrayCopia = cloneArray(processosArray);
 			}
 			////////////////////////////////////////////////////////////////////////////////
 			else if (algoritmo == '2') {
@@ -220,7 +240,7 @@ $(document).ready(function () {
 
 				while (processosParaExecutar > 0) {
 
-					processosArrayCopia.map(function (element, index) {
+					processosArrayCopia.forEach(function (element, index) {
 
 						if ((element.chegada <= cicloAtual)) {
 
@@ -289,7 +309,7 @@ $(document).ready(function () {
 
 				processosParaExecutar = processosArray.length;
 
-				processosExecucao.map(function (element) {
+				processosExecucao.forEach(function (element) {
 
 					tempoMedio += element.emEspera + element.jaExecutado;
 				});
@@ -299,7 +319,7 @@ $(document).ready(function () {
 				console.log('tempo médio:', tempoMedio, 'u.t.');
 
 				
-				processosArrayCopia = processosArray.slice(0);
+				processosArrayCopia = cloneArray(processosArray);
 			}
 			////////////////////////////////////////////////////////////////////////////////
 			else if (algoritmo == '3') {
@@ -319,7 +339,7 @@ $(document).ready(function () {
 
 				while (processosParaExecutar > 0) {
 
-					processosArrayCopia.map(function (element, index) {
+					processosArrayCopia.forEach(function (element, index) {
 
 						//console.log('element:', element);
 
@@ -384,7 +404,7 @@ $(document).ready(function () {
 
 									element.estado = 'preempcao';
 
-									element.emEspera++;
+									//element.emEspera++;
 								}
 								else {
 
@@ -399,6 +419,8 @@ $(document).ready(function () {
 								element.estado = 'pronto';
 
 								escalonamentoArray.push(element);
+
+								element.emEspera++;
 							}
 						}
 					});
@@ -412,7 +434,7 @@ $(document).ready(function () {
 
 				processosParaExecutar = processosArray.length;
 
-				/*processosExecucao.map(function (element) {
+				/*processosExecucao.forEach(function (element) {
 
 					tempoMedio += element.emEspera + element.jaExecutado;
 				});
@@ -421,7 +443,7 @@ $(document).ready(function () {
 
 				console.log('tempo médio:', tempoMedio, 'u.t.');*/
 
-				processosArrayCopia = processosArray.slice(0);
+				processosArrayCopia = cloneArray(processosArray);
 			}
 			////////////////////////////////////////////////////////////////////////////////
 			else if (algoritmo == '4') {
@@ -432,7 +454,7 @@ $(document).ready(function () {
 
 				processosParaExecutar = processosArray.length;
 
-				processosExecucao.map(function (element) {
+				processosExecucao.forEach(function (element) {
 
 					tempoMedio += element.emEspera + element.jaExecutado;
 				});
@@ -440,7 +462,7 @@ $(document).ready(function () {
 				tempoMedio = tempoMedio/processosParaExecutar;
 
 				console.log('tempo médio:', tempoMedio, 'u.t.');
-				processosArrayCopia = processosArray.slice(0);
+				processosArrayCopia = cloneArray(processosArray);
 			}
 		}
 	});
