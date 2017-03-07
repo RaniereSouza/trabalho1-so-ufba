@@ -12,14 +12,18 @@
 	<body>
 
 		<header class="container-fluid">
-			<h1 class="header-title">Hello, world!</h1>
+			<div class="header-image col-md-1"></div>
+			<h1 class="header-title col-md-11 pull-right">Hello, world!</h1>
 		</header>
 
 		<br>
 
 		<main class="container">
-
-			<p><i>unidade de tempo: 1s</i></p>
+			
+			<p>
+				Trabalho com o objetivo de determinar a ordem e o tempo de execução/espera de processos quaisquer, simulando a aplicação de 4 algoritmos de escalonamento distintos (<span title="First In, First Out">FIFO</span>, <span title="Smallest Job First">SJF</span>, <span title="Round-Robin">RR</span> e <span title="Earliest Deadline First">EDF</span>), bem como calculando o tempo médio de <i>throughput</i> em cada caso
+			</p>
+			<p><i>unidade de tempo: 1 u.t. (quantum default: 3 u.t.)</i></p>
 
 			<hr>
 			<br>
@@ -27,7 +31,7 @@
 			<form action="" method="POST" id="quantum-form">
 				<fieldset>
 					<legend>Valor de Quantum</legend>
-					<input type="text" name="quantum" id="quantum" placeholder="quantum">
+					<input type="text" name="quantum" id="quantum" placeholder="quantum" value="3">
 					<input type="submit" value="Adicionar">
 				</fieldset>
 			</form>
@@ -38,7 +42,7 @@
 					<input type="text" name="nome"  id="nome" placeholder="nome" required="required">
 					<input type="text" name="chegada"  id="chegada" placeholder="chegada" required="required">
 					<input type="text" name="tempoExecucao"  id="tempoExecucao" placeholder="tempo de execução" required="required">
-					<input type="text" name="prioridade"  id="prioridade" placeholder="prioridade">
+					<!-- input type="text" name="prioridade"  id="prioridade" placeholder="prioridade" -->
 					<input type="text" name="deadline"  id="deadline" placeholder="deadline">
 					<input type="submit" value="Adicionar">
 				</fieldset>
@@ -64,6 +68,18 @@
 				<h3>Fila de Processos</h3>
 
 				<hr>
+			</div>
+
+			<br><br>
+
+			<div class="container-fluid" id="fila-de-execucao">
+				
+			</div>
+			
+			<div class="container-fluid">
+				<canvas id="grafico-de-execucao" class="center-block" width="400" height="200">
+					
+				</canvas>
 			</div>
 		</main>
 

@@ -1,10 +1,29 @@
 header {
-	background-color: blue;
+	display: flex;
+	background-color: #00aeef;
 	color: #fff;
 }
 
+header.container-fluid {
+	padding: 0;
+}
+
+header .header-image {
+	height: 81px;
+	background-image: url('./assets/img/banner.png');
+	background-color: #fff;
+	background-position: center left;
+	background-size: 100% auto;
+	background-repeat: no-repeat;
+}
+
+header .header-title {
+	text-align: right;
+}
+
 .processo-wrapper {
-	border:  1px solid #ccc;
-	padding: 15px;
 	margin-bottom: 10px;
+	border:  1px solid #ccc;
+	border-radius: 5px;
+	padding: 15px;
 }
