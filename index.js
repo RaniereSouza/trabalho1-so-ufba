@@ -1,5 +1,7 @@
 $(document).ready(function () {
 
+	$('.header-title').text('Trabalho de SO - Escalonamento de Processos');
+
 	let processosArray = [],
 		quantum = 3,
 		ctx = $('#grafico-de-execucao')[0].getContext('2d'),
@@ -23,6 +25,11 @@ $(document).ready(function () {
 		],
 		myChart;
 
+
+
+
+
+
 	function corRandom () {
 
 		let len = arrayDeCores.length;
@@ -30,101 +37,8 @@ $(document).ready(function () {
 		return arrayDeCores[Math.floor(Math.random() * len)]; 
 	}
 
-	/*let myChart = new Chart(ctx, {
-		    type: 'line',
-		    data: {
-		        datasets: [
-			        {
-			            label: 'Processo A',
-			            borderWidth: 3,
-			            borderColor: corRandom(),
-			            fill: true,
-			            data: [{
-			                x: 0,
-			                y: 1
-			            }, {
-			                x: 7,
-			                y: 1
-			            }]
-			        },
-			        {
-			            label: 'Processo B',
-			            borderWidth: 3,
-			            borderColor: corRandom(),
-			            fill: true,
-			            data: [
-			            NaN,
-			            {
-			                x: 7,
-			                y: 2
-			            }, {
-			                x: 12,
-			                y: 2
-			            }]
-			        },
-			        {
-			            label: 'Processo C',
-			            borderWidth: 3,
-			            borderColor: corRandom(),
-			            fill: true,
-			            data: [
-			            NaN,
-			            {
-			                x: 12,
-			                y: 3
-			            }, {
-			                x: 15,
-			                y: 3
-			            }]
-			        },
-			        {
-			            label: 'Tempo de Espera',
-			            borderWidth: 3,
-			            borderColor: 'gray',
-			            fill: false,
-			            data: [
-			            NaN,
-			            {
-			                x: 2,
-			                y: 2
-			            }, {
-			                x: 7,
-			                y: 2
-			            },
-			            NaN,
-			            {
-			            	x: 5,
-			            	y: 3
-			            }, {
-			            	x: 12,
-			            	y: 3
-			            }]
-			        },
-		        ]
-		    },
-		    options: {
-		    	title: {
-		    		display: true,
-		    		fontSize: 21,
-		    		fontColor: '#111',
-		    		text: 'Gráfico de Execução - FIFO'
-		    	},
-		        scales: {
-		            xAxes: [{
-		                type: 'linear',
-		                position: 'bottom'
-		            }],
-		            yAxes: [{
-		            	ticks: {
-		            		beginAtZero: true
-		            	}
-		            }]
-		        },
-		        layout: {
-		        	padding: 15
-		        }
-		    }
-		});*/
+
+
 
 
 
@@ -137,6 +51,9 @@ $(document).ready(function () {
 
 		return result;
 	}
+
+
+
 
 
 
@@ -289,7 +206,9 @@ $(document).ready(function () {
 			options.title.text = 'Gráfico de Execução - RR';
 
 			let nomesProcessos = [],
-				execObjProcessos = [];
+				execObjProcessos = [],
+				preempcaoCounters = [],
+				lastExecEnds = [];
 
 			arrayExecucao.forEach(function (element, index) {
 
@@ -306,8 +225,13 @@ $(document).ready(function () {
 				            borderWidth: 3,
 				            borderColor: corRandom(),
 				            fill: true,
-				            data: []
+				            data: [],
+				            preempcaoCounter: 0
 						});
+
+						preempcaoCounters.push(0);
+
+						lastExecEnds.push(null);
 
 						yProcesso = nomesProcessos.length;
 					}
@@ -346,8 +270,44 @@ $(document).ready(function () {
 						x: xExecEnd,
 						y: yProcesso
 					});
+
+					let xEspStart = 0,
+						xEspEnd = xExecStart;
+
+					if (lastExecEnds[yProcesso - 1] === null) {
+
+						xEspStart = element.chegada;
+					}
+					else {
+
+						xEspStart = lastExecEnds[yProcesso - 1];
+
+						if (execObjProcessos[yProcesso - 1].preempcaoCounter <
+						   preempcaoCounters[yProcesso - 1]) {
+
+							xEspStart++;
+
+							execObjProcessos[yProcesso - 1].preempcaoCounter = preempcaoCounters[yProcesso - 1];
+						}
+					}
+
+					lastExecEnds[yProcesso -1] = xExecEnd;
+
+					tempoEspera.data.push({
+						x: xEspStart,
+						y: yProcesso
+					});
+
+					tempoEspera.data.push({
+						x: xEspEnd,
+						y: yProcesso
+					});
+
+					tempoEspera.data.push(NaN);
 				}
 				else {
+
+					preempcaoCounters[yProcesso - 1]++;
 					
 					let lastExec = arrayExecucao[index - 1];
 
@@ -376,7 +336,7 @@ $(document).ready(function () {
 
 			datasets = execObjProcessos;
 
-			//datasets.push(tempoEspera);
+			datasets.push(tempoEspera);
 			datasets.push(preempcao);
 
 			chartObj.data.datasets = datasets;
@@ -394,7 +354,6 @@ $(document).ready(function () {
 
 
 
-	$('.header-title').text('Trabalho de SO - Escalonamento de Processos');
 
 
 
@@ -402,8 +361,17 @@ $(document).ready(function () {
 
 		e.preventDefault();
 
-		quantum = Number($(e.target).find('#quantum').val());
+		if (($(e.target).find('#quantum').val()) &&
+		   (Number($(e.target).find('#quantum').val()) !== quantum)) {
+
+		   	console.log('alterando quantum para', Number($(e.target).find('#quantum').val()));
+
+			quantum = Number($(e.target).find('#quantum').val());
+		}
 	});
+
+
+
 
 
 
@@ -439,6 +407,9 @@ $(document).ready(function () {
 
 
 
+
+
+
 	$('#algoritmo-form').on('submit', function (e) {
 
 		e.preventDefault();
@@ -465,7 +436,7 @@ $(document).ready(function () {
 
 			let algoritmo = $(e.target).find('#algoritmos').val();
 
-			////////////////////////////////////////////////////////////////////////////////
+			////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			if (algoritmo == '1') {
 
 				console.log('First In, First Out!');
@@ -510,7 +481,7 @@ $(document).ready(function () {
 
 				processosArrayCopia = clonarArray(processosArray);
 			}
-			////////////////////////////////////////////////////////////////////////////////
+			////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			else if (algoritmo == '2') {
 
 				console.log('Smallest Job First!');
@@ -611,7 +582,7 @@ $(document).ready(function () {
 				
 				processosArrayCopia = clonarArray(processosArray);
 			}
-			////////////////////////////////////////////////////////////////////////////////
+			////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			else if (algoritmo == '3') {
 
 				console.log('Round-Robin!');
@@ -737,7 +708,7 @@ $(document).ready(function () {
 
 				processosArrayCopia = clonarArray(processosArray);
 			}
-			////////////////////////////////////////////////////////////////////////////////
+			////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			else if (algoritmo == '4') {
 
 				console.log('Earliest Deadline First!');
