@@ -19,9 +19,14 @@
 		<br>
 
 		<main class="container">
-			
 			<p>
-				Trabalho com o objetivo de determinar a ordem e o tempo de execução/espera de processos quaisquer, simulando a aplicação de 4 algoritmos de escalonamento distintos (<span title="First In, First Out">FIFO</span>, <span title="Smallest Job First">SJF</span>, <span title="Round-Robin">RR</span> e <span title="Earliest Deadline First">EDF</span>), bem como calculando o tempo médio de <i>throughput</i> em cada caso
+				<b>Equipe:</b> Fernando Medeiros e Raniere Souza
+			</p>
+			<p>
+				<b>Descrição:</b> Trabalho com o objetivo de determinar a ordem e o tempo de execução/espera de processos quaisquer, simulando a aplicação de 4 algoritmos de escalonamento distintos (<span title="First In, First Out">FIFO</span>, <span title="Smallest Job First">SJF</span>, <span title="Round-Robin">RR</span> e <span title="Earliest Deadline First">EDF</span>), bem como calculando o tempo médio de <i>throughput</i> em cada caso.
+			</p>
+			<p>
+				<b>Modo de uso:</b> Insira um processo por vez na fila que vai ser escalonada. Indique também qual <i>quantum</i> será usado, caso queira um diferente do <i>default</i>. Em seguida, selecione um dos 4 algoritmos e clique em 'Rodar' para ver o gráfico da execução e o valor do tempo médio de <i>throughput</i> daquele algoritmo. Para limpar os dados, basta dar <i>refresh</i> no <i>browser</i> (um controle melhor será posteriormente implementado).
 			</p>
 			<p><i>unidade de tempo: 1 u.t. (quantum default: 3 u.t.)</i></p>
 
@@ -31,17 +36,17 @@
 			<form action="" method="POST" id="quantum-form">
 				<fieldset>
 					<legend>Valor de Quantum</legend>
-					<input type="text" name="quantum" id="quantum" placeholder="quantum" value="3">
-					<input type="submit" value="Adicionar">
+					<input type="text" name="quantum" id="quantum" placeholder="quantum" required="required">
+					<input type="submit" value="Alterar">
 				</fieldset>
 			</form>
 
 			<form action="" method="POST" id="processo-form">
 				<fieldset>
-					<legend>Dados do Processo</legend>
-					<input type="text" name="nome"  id="nome" placeholder="nome" required="required">
-					<input type="text" name="chegada"  id="chegada" placeholder="chegada" required="required">
-					<input type="text" name="tempoExecucao"  id="tempoExecucao" placeholder="tempo de execução" required="required">
+					<legend>Dados para novo Processo</legend>
+					<input type="text" name="nome"  id="nome" placeholder="nome*" required="required">
+					<input type="text" name="chegada"  id="chegada" placeholder="chegada*" required="required">
+					<input type="text" name="tempoExecucao"  id="tempoExecucao" placeholder="tempo de execução*" required="required">
 					<!-- input type="text" name="prioridade"  id="prioridade" placeholder="prioridade" -->
 					<input type="text" name="deadline"  id="deadline" placeholder="deadline">
 					<input type="submit" value="Adicionar">
@@ -70,13 +75,18 @@
 				<hr>
 			</div>
 
-			<br><br>
+			<br>
 
 			<div class="container-fluid" id="fila-de-execucao">
 				
 			</div>
 			
 			<div class="container-fluid">
+
+				<h3>Resultado</h3>
+
+				<hr>
+
 				<canvas id="grafico-de-execucao" class="center-block" width="400" height="200">
 					
 				</canvas>

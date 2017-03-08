@@ -1,7 +1,5 @@
 $(document).ready(function () {
 
-	$('.header-title').text('Trabalho de SO - Escalonamento de Processos');
-
 	let processosArray = [],
 		quantum = 3,
 		ctx = $('#grafico-de-execucao')[0].getContext('2d'),
@@ -24,6 +22,10 @@ $(document).ready(function () {
 			'darkgoldenrod',
 		],
 		myChart;
+
+	$('.header-title').text('Trabalho de SO - Escalonamento de Processos');
+
+	$('#quantum-form #quantum').val(String(quantum));
 
 
 
@@ -57,7 +59,7 @@ $(document).ready(function () {
 
 
 
-	function desenharGraficoExecucao (algoritmo, arrayExecucao) {
+	function desenharGraficoExecucao (algoritmo, arrayExecucao, tempoMedio) {
 
 		let options = {
 		    	title: {
@@ -69,11 +71,19 @@ $(document).ready(function () {
 		        scales: {
 		            xAxes: [{
 		                type: 'linear',
-		                position: 'bottom'
+		                position: 'bottom',
+		            	scaleLabel: {
+		            		display: true,
+		            		labelString: 'tempo (u.t.)'
+		            	}
 		            }],
 		            yAxes: [{
 		            	ticks: {
 		            		beginAtZero: true
+		            	},
+		            	scaleLabel: {
+		            		display: true,
+		            		labelString: '# dos processos'
 		            	}
 		            }]
 		        },
@@ -86,6 +96,7 @@ $(document).ready(function () {
 		    	label: 'Tempo de Espera',
 	            borderWidth: 3,
 	            borderColor: 'gray',
+	            borderDash: [5, 5],
 	            fill: false,
 	            data: []
 		    },
@@ -103,12 +114,13 @@ $(document).ready(function () {
 
 		if (algoritmo == '1') {
 
-			options.title.text = 'Gráfico de Execução - FIFO';
+			options.title.text = 'Gráfico de Execução - FIFO (throughput médio: ' +
+								 tempoMedio.toFixed(2) + ' u.t.)';
 
 			arrayExecucao.forEach(function (element, index) {
 				
 				let execObj = {
-						label: 'Processo ' + element.nome,
+						label: 'Processo ' + element.nome + ' (#' + (index + 1) + ')',
 			            borderWidth: 3,
 			            borderColor: corRandom(),
 			            fill: true,
@@ -148,17 +160,23 @@ $(document).ready(function () {
 			chartObj.options = options;
 
 			console.log('chartObj:', chartObj);
+
+			if (typeof(myChart) !== 'undefined') {
+
+				myChart.destroy();
+			}
 
 			myChart = new Chart(ctx, chartObj);
 		}
 		else if (algoritmo == '2') {
 
-			options.title.text = 'Gráfico de Execução - SJF';
+			options.title.text = 'Gráfico de Execução - SJF (throughput médio: ' +
+								 tempoMedio.toFixed(2) + ' u.t.)';
 
 			arrayExecucao.forEach(function (element, index) {
 				
 				let execObj = {
-						label: 'Processo ' + element.nome,
+						label: 'Processo ' + element.nome + ' (#' + (index + 1) + ')',
 			            borderWidth: 3,
 			            borderColor: corRandom(),
 			            fill: true,
@@ -199,11 +217,17 @@ $(document).ready(function () {
 
 			console.log('chartObj:', chartObj);
 
+			if (typeof(myChart) !== 'undefined') {
+
+				myChart.destroy();
+			}
+
 			myChart = new Chart(ctx, chartObj);
 		}
 		else if (algoritmo == '3') {
 
-			options.title.text = 'Gráfico de Execução - RR';
+			options.title.text = 'Gráfico de Execução - RR (throughput médio: ' +
+								 tempoMedio.toFixed(2) + ' u.t.)';
 
 			let nomesProcessos = [],
 				execObjProcessos = [],
@@ -234,6 +258,8 @@ $(document).ready(function () {
 						lastExecEnds.push(null);
 
 						yProcesso = nomesProcessos.length;
+
+						execObjProcessos[yProcesso - 1].label += ' (#' + yProcesso + ')';
 					}
 					else {
 
@@ -332,7 +358,7 @@ $(document).ready(function () {
 				}
 			});
 
-			console.log('execObjProcessos:', execObjProcessos);
+			//console.log('execObjProcessos:', execObjProcessos);
 
 			datasets = execObjProcessos;
 
@@ -343,6 +369,11 @@ $(document).ready(function () {
 			chartObj.options = options;
 
 			console.log('chartObj:', chartObj);
+
+			if (typeof(myChart) !== 'undefined') {
+
+				myChart.destroy();
+			}
 
 			myChart = new Chart(ctx, chartObj);
 		}
@@ -477,7 +508,7 @@ $(document).ready(function () {
 
 				console.log('tempo médio:', tempoMedio, 'u.t.');
 
-				desenharGraficoExecucao(algoritmo, processosExecucao);
+				desenharGraficoExecucao(algoritmo, processosExecucao, tempoMedio);
 
 				processosArrayCopia = clonarArray(processosArray);
 			}
@@ -578,7 +609,7 @@ $(document).ready(function () {
 
 				console.log('tempo médio:', tempoMedio, 'u.t.');
 
-				desenharGraficoExecucao(algoritmo, processosExecucao);
+				desenharGraficoExecucao(algoritmo, processosExecucao, tempoMedio);
 				
 				processosArrayCopia = clonarArray(processosArray);
 			}
@@ -691,20 +722,40 @@ $(document).ready(function () {
 
 				console.log(processosExecucao);
 
-				//let tempoMedio = 0;
+				let tempoMedio = 0,
+					processosNomes = [],
+					lastExecArray = [];
 
 				processosParaExecutar = processosArray.length;
 
-				/*processosExecucao.forEach(function (element) {
+				processosExecucao.forEach(function (element, index) {
 
-					tempoMedio += element.emEspera + element.jaExecutado;
+					if ((element.nome !== '_SOBRECARGA_')) {
+
+					    if (processosNomes.indexOf(element.nome) < 0) {
+
+							processosNomes.push(element.nome);
+							lastExecArray.push(index);
+						}
+						else {
+
+							lastExecArray[processosNomes.indexOf(element.nome)] = index;
+						}
+					}
+				});
+
+				//console.log('lastExecArray:', lastExecArray);
+
+				lastExecArray.forEach(function (element) {
+					
+					tempoMedio += processosExecucao[element].emEspera + processosExecucao[element].jaExecutado;
 				});
 
 				tempoMedio = tempoMedio/processosParaExecutar;
 
-				console.log('tempo médio:', tempoMedio, 'u.t.');*/
+				console.log('tempo médio:', tempoMedio, 'u.t.');
 
-				desenharGraficoExecucao(algoritmo, processosExecucao);
+				desenharGraficoExecucao(algoritmo, processosExecucao, tempoMedio);
 
 				processosArrayCopia = clonarArray(processosArray);
 			}
