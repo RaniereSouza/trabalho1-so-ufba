@@ -2,101 +2,49 @@ $(document).ready(function () {
 
 	let processosArray = [],
 		quantum = 3,
-		ctx = $('#grafico-de-execucao')[0].getContext('2d');
+		ctx = $('#grafico-de-execucao')[0].getContext('2d'),
+		arrayDeCores = [
+			'red',
+			'blue',
+			'lime',
+			'yellow',
+			'orange',
+			'pink',
+			'green',
+			'aqua',
+			'brown',
+			'deeppink',
+			'darkblue',
+			'darkred',
+			'darkgreen',
+			'darkorange',
+			'mediumpurple',
+			'darkgoldenrod',
+		],
+		myChart;
 
-	let myChart = new Chart(ctx, {
-		    type: 'line',
-		    data: {
-		        datasets: [
-			        {
-			            label: 'Processo A',
-			            borderWidth: 3,
-			            borderColor: 'red',
-			            fill: true,
-			            data: [{
-			                x: 0,
-			                y: 1
-			            }, {
-			                x: 7,
-			                y: 1
-			            }]
-			        },
-			        {
-			            label: 'Processo B',
-			            borderWidth: 3,
-			            borderColor: 'blue',
-			            fill: true,
-			            data: [
-			            NaN,
-			            {
-			                x: 7,
-			                y: 2
-			            }, {
-			                x: 12,
-			                y: 2
-			            }]
-			        },
-			        {
-			            label: 'Processo C',
-			            borderWidth: 3,
-			            borderColor: 'lime',
-			            fill: true,
-			            data: [
-			            NaN,
-			            {
-			                x: 12,
-			                y: 3
-			            }, {
-			                x: 15,
-			                y: 3
-			            }]
-			        },
-			        {
-			            label: 'Tempo de Espera',
-			            borderWidth: 3,
-			            borderColor: 'gray',
-			            fill: false,
-			            data: [
-			            NaN,
-			            {
-			                x: 2,
-			                y: 2
-			            }, {
-			                x: 7,
-			                y: 2
-			            },
-			            NaN,
-			            {
-			            	x: 5,
-			            	y: 3
-			            }, {
-			            	x: 12,
-			            	y: 3
-			            }]
-			        },
-		        ]
-		    },
-		    options: {
-		        scales: {
-		            xAxes: [{
-		                type: 'linear',
-		                position: 'bottom'
-		            }],
-		            yAxes: [{
-		            	ticks: {
-		            		beginAtZero: true
-		            	}
-		            }]
-		        },
-		        layout: {
-		        	padding: 15
-		        }
-		    }
-		});
+	$('.header-title').text('Trabalho de SO - Escalonamento de Processos');
+
+	$('#quantum-form #quantum').val(String(quantum));
 
 
 
-	function cloneArray (array) {
+
+
+
+	function corRandom () {
+
+		let len = arrayDeCores.length;
+
+		return arrayDeCores[Math.floor(Math.random() * len)];
+	}
+
+
+
+
+
+
+	function clonarArray (array) {
 
 		let result = array.map(function (element) {
 
@@ -108,7 +56,484 @@ $(document).ready(function () {
 
 
 
-	$('.header-title').text('Trabalho de SO - Escalonamento de Processos');
+
+
+
+	function desenharGraficoExecucao (algoritmo, arrayExecucao, tempoMedio) {
+
+		let options = {
+		    	title: {
+		    		display: true,
+		    		fontSize: 21,
+		    		fontColor: '#111',
+		    		//text: 'Título do Meu Gráfico'
+		    	},
+		        scales: {
+		            xAxes: [{
+		                type: 'linear',
+		                position: 'bottom',
+		            	scaleLabel: {
+		            		display: true,
+		            		labelString: 'tempo (u.t.)'
+		            	}
+		            }],
+		            yAxes: [{
+		            	ticks: {
+		            		beginAtZero: true
+		            	},
+		            	scaleLabel: {
+		            		display: true,
+		            		labelString: '# dos processos'
+		            	}
+		            }]
+		        },
+		        layout: {
+		        	padding: 15
+		        }
+		    },
+		    datasets = [],
+		    tempoEspera = {
+		    	label: 'Tempo de Espera',
+	            borderWidth: 3,
+	            borderColor: 'gray',
+	            borderDash: [5, 5],
+	            fill: false,
+	            data: []
+		    },
+		    preempcao = {
+		    	label: 'Preempção',
+	            borderWidth: 3,
+	            borderColor: 'black',
+	            fill: false,
+	            data: []
+		    },
+		    chartObj = {
+		    	type: 'line',
+		    	data: {}
+		    };
+
+		if (algoritmo == '1') {
+
+			options.title.text = 'Gráfico de Execução - FIFO (throughput médio: ' +
+								 tempoMedio.toFixed(2) + ' u.t.)';
+
+			arrayExecucao.forEach(function (element, index) {
+
+				let execObj = {
+						label: 'Processo ' + element.nome + ' (#' + (index + 1) + ')',
+			            borderWidth: 3,
+			            borderColor: corRandom(),
+			            fill: true,
+			            data: [
+			            	{
+			            		x: element.chegada + element.emEspera,
+			            		y: index + 1
+			            	},
+			            	{
+			            		x: element.chegada + element.emEspera + element.tempoExecucao,
+			            		y: index + 1
+			            	}
+			            ]
+					};
+
+				if (element.emEspera > 0) {
+
+					tempoEspera.data.push(NaN);
+
+					tempoEspera.data.push({
+						x: element.chegada,
+						y: index + 1
+					});
+
+					tempoEspera.data.push({
+						x: element.chegada + element.emEspera,
+						y: index + 1
+					});
+				}
+
+				datasets.push(execObj);
+			});
+
+			datasets.push(tempoEspera);
+
+			chartObj.data.datasets = datasets;
+			chartObj.options = options;
+
+			console.log('chartObj:', chartObj);
+
+			if (typeof(myChart) !== 'undefined') {
+
+				myChart.destroy();
+			}
+
+			myChart = new Chart(ctx, chartObj);
+		}
+		else if (algoritmo == '2') {
+
+			options.title.text = 'Gráfico de Execução - SJF (throughput médio: ' +
+								 tempoMedio.toFixed(2) + ' u.t.)';
+
+			arrayExecucao.forEach(function (element, index) {
+
+				let execObj = {
+						label: 'Processo ' + element.nome + ' (#' + (index + 1) + ')',
+			            borderWidth: 3,
+			            borderColor: corRandom(),
+			            fill: true,
+			            data: [
+			            	{
+			            		x: element.chegada + element.emEspera,
+			            		y: index + 1
+			            	},
+			            	{
+			            		x: element.chegada + element.emEspera + element.tempoExecucao,
+			            		y: index + 1
+			            	}
+			            ]
+					};
+
+				if (element.emEspera > 0) {
+
+					tempoEspera.data.push(NaN);
+
+					tempoEspera.data.push({
+						x: element.chegada,
+						y: index + 1
+					});
+
+					tempoEspera.data.push({
+						x: element.chegada + element.emEspera,
+						y: index + 1
+					});
+				}
+
+				datasets.push(execObj);
+			});
+
+			datasets.push(tempoEspera);
+
+			chartObj.data.datasets = datasets;
+			chartObj.options = options;
+
+			console.log('chartObj:', chartObj);
+
+			if (typeof(myChart) !== 'undefined') {
+
+				myChart.destroy();
+			}
+
+			myChart = new Chart(ctx, chartObj);
+		}
+		else if (algoritmo == '3') {
+
+			options.title.text = 'Gráfico de Execução - RR (throughput médio: ' +
+								 tempoMedio.toFixed(2) + ' u.t.)';
+
+			let nomesProcessos = [],
+				execObjProcessos = [],
+				preempcaoCounters = [],
+				lastExecEnds = [];
+
+			arrayExecucao.forEach(function (element, index) {
+
+				let yProcesso = 0;
+
+				if (nomesProcessos.indexOf(element.nome) < 0) {
+
+					if (element.nome !== '_SOBRECARGA_') {
+
+						nomesProcessos.push(element.nome);
+
+						execObjProcessos.push({
+							label: 'Processo ' + element.nome,
+				            borderWidth: 3,
+				            borderColor: corRandom(),
+				            fill: true,
+				            data: [],
+				            preempcaoCounter: 0
+						});
+
+						preempcaoCounters.push(0);
+
+						lastExecEnds.push(null);
+
+						yProcesso = nomesProcessos.length;
+
+						execObjProcessos[yProcesso - 1].label += ' (#' + yProcesso + ')';
+					}
+					else {
+
+						yProcesso = nomesProcessos.indexOf(arrayExecucao[index - 1].nome) + 1;
+					}
+				}
+				else {
+
+					yProcesso = nomesProcessos.indexOf(element.nome) + 1;
+				}
+
+				if (element.nome !== '_SOBRECARGA_') {
+
+					let xExecStart = element.chegada,
+						xExecEnd = element.chegada;
+
+					xExecEnd += element.jaExecutado + element.emEspera;
+
+					if (element.jaExecutado % quantum === 0) {
+
+						xExecStart += (element.jaExecutado - quantum) + element.emEspera;
+					}
+					else {
+
+						xExecStart += (element.jaExecutado - (element.jaExecutado % quantum)) + element.emEspera;
+					}
+
+					execObjProcessos[yProcesso - 1].data.push({
+						x: xExecStart,
+						y: yProcesso
+					});
+
+					execObjProcessos[yProcesso - 1].data.push({
+						x: xExecEnd,
+						y: yProcesso
+					});
+
+					let xEspStart = 0,
+						xEspEnd = xExecStart;
+
+					if (lastExecEnds[yProcesso - 1] === null) {
+
+						xEspStart = element.chegada;
+					}
+					else {
+
+						xEspStart = lastExecEnds[yProcesso - 1];
+
+						if (execObjProcessos[yProcesso - 1].preempcaoCounter <
+						   preempcaoCounters[yProcesso - 1]) {
+
+							xEspStart++;
+
+							execObjProcessos[yProcesso - 1].preempcaoCounter = preempcaoCounters[yProcesso - 1];
+						}
+					}
+
+					lastExecEnds[yProcesso -1] = xExecEnd;
+
+					tempoEspera.data.push({
+						x: xEspStart,
+						y: yProcesso
+					});
+
+					tempoEspera.data.push({
+						x: xEspEnd,
+						y: yProcesso
+					});
+
+					tempoEspera.data.push(NaN);
+				}
+				else {
+
+					preempcaoCounters[yProcesso - 1]++;
+
+					let lastExec = arrayExecucao[index - 1];
+
+					//console.log('lastExec:', lastExec);
+
+					preempcao.data.push({
+						x: lastExec.chegada + lastExec.emEspera + lastExec.jaExecutado,
+						y: yProcesso
+					});
+
+					preempcao.data.push({
+						x: lastExec.chegada + lastExec.emEspera + lastExec.jaExecutado + 1,
+						y: yProcesso
+					});
+
+					if (lastExec.jaExecutado < lastExec.tempoExecucao) {
+
+						preempcao.data.push(NaN);
+					}
+
+					execObjProcessos[yProcesso - 1].data.push(NaN);
+				}
+			});
+
+			//console.log('execObjProcessos:', execObjProcessos);
+
+			datasets = execObjProcessos;
+
+			datasets.push(tempoEspera);
+			datasets.push(preempcao);
+
+			chartObj.data.datasets = datasets;
+			chartObj.options = options;
+
+			console.log('chartObj:', chartObj);
+
+			if (typeof(myChart) !== 'undefined') {
+
+				myChart.destroy();
+			}
+
+			myChart = new Chart(ctx, chartObj);
+		}
+		else if (algoritmo == '4') {
+
+			options.title.text = 'Gráfico de Execução - EDF (throughput médio: ' +
+								 tempoMedio.toFixed(2) + ' u.t.)';
+
+			let nomesProcessos = [],
+				execObjProcessos = [],
+				preempcaoCounters = [],
+				lastExecEnds = [];
+
+			arrayExecucao.forEach(function (element, index) {
+
+				let yProcesso = 0;
+
+				if (nomesProcessos.indexOf(element.nome) < 0) {
+
+					if (element.nome !== '_SOBRECARGA_') {
+
+						nomesProcessos.push(element.nome);
+
+						execObjProcessos.push({
+							label: 'Processo ' + element.nome,
+				            borderWidth: 3,
+				            borderColor: corRandom(),
+				            fill: true,
+				            data: [],
+				            preempcaoCounter: 0
+						});
+
+						preempcaoCounters.push(0);
+
+						lastExecEnds.push(null);
+
+						yProcesso = nomesProcessos.length;
+
+						execObjProcessos[yProcesso - 1].label += ' (#' + yProcesso + ')';
+					}
+					else {
+
+						yProcesso = nomesProcessos.indexOf(arrayExecucao[index - 1].nome) + 1;
+					}
+				}
+				else {
+
+					yProcesso = nomesProcessos.indexOf(element.nome) + 1;
+				}
+
+				if (element.nome !== '_SOBRECARGA_') {
+
+					let xExecStart = element.chegada,
+						xExecEnd = element.chegada;
+
+					xExecEnd += element.jaExecutado + element.emEspera;
+
+					if (element.jaExecutado % quantum === 0) {
+
+						xExecStart += (element.jaExecutado - quantum) + element.emEspera;
+					}
+					else {
+
+						xExecStart += (element.jaExecutado - (element.jaExecutado % quantum)) + element.emEspera;
+					}
+
+					execObjProcessos[yProcesso - 1].data.push({
+						x: xExecStart,
+						y: yProcesso
+					});
+
+					execObjProcessos[yProcesso - 1].data.push({
+						x: xExecEnd,
+						y: yProcesso
+					});
+
+					let xEspStart = 0,
+						xEspEnd = xExecStart;
+
+					if (lastExecEnds[yProcesso - 1] === null) {
+
+						xEspStart = element.chegada;
+					}
+					else {
+
+						xEspStart = lastExecEnds[yProcesso - 1];
+
+						if (execObjProcessos[yProcesso - 1].preempcaoCounter <
+						   preempcaoCounters[yProcesso - 1]) {
+
+							xEspStart++;
+
+							execObjProcessos[yProcesso - 1].preempcaoCounter = preempcaoCounters[yProcesso - 1];
+						}
+					}
+
+					lastExecEnds[yProcesso -1] = xExecEnd;
+
+					tempoEspera.data.push({
+						x: xEspStart,
+						y: yProcesso
+					});
+
+					tempoEspera.data.push({
+						x: xEspEnd,
+						y: yProcesso
+					});
+
+					tempoEspera.data.push(NaN);
+				}
+				else {
+
+					preempcaoCounters[yProcesso - 1]++;
+
+					let lastExec = arrayExecucao[index - 1];
+
+					//console.log('lastExec:', lastExec);
+
+					preempcao.data.push({
+						x: lastExec.chegada + lastExec.emEspera + lastExec.jaExecutado,
+						y: yProcesso
+					});
+
+					preempcao.data.push({
+						x: lastExec.chegada + lastExec.emEspera + lastExec.jaExecutado + 1,
+						y: yProcesso
+					});
+
+					if (lastExec.jaExecutado < lastExec.tempoExecucao) {
+
+						preempcao.data.push(NaN);
+					}
+
+					execObjProcessos[yProcesso - 1].data.push(NaN);
+				}
+			});
+
+			//console.log('execObjProcessos:', execObjProcessos);
+
+			datasets = execObjProcessos;
+
+			datasets.push(tempoEspera);
+			datasets.push(preempcao);
+
+			chartObj.data.datasets = datasets;
+			chartObj.options = options;
+
+			console.log('chartObj:', chartObj);
+
+			if (typeof(myChart) !== 'undefined') {
+
+				myChart.destroy();
+			}
+
+			myChart = new Chart(ctx, chartObj);
+		}
+	}
+
+
+
 
 
 
@@ -116,8 +541,17 @@ $(document).ready(function () {
 
 		e.preventDefault();
 
-		quantum = Number($(e.target).find('#quantum').val());
+		if (($(e.target).find('#quantum').val()) &&
+		   (Number($(e.target).find('#quantum').val()) !== quantum)) {
+
+		   	console.log('alterando quantum para', Number($(e.target).find('#quantum').val()));
+
+			quantum = Number($(e.target).find('#quantum').val());
+		}
 	});
+
+
+
 
 
 
@@ -153,6 +587,9 @@ $(document).ready(function () {
 
 
 
+
+
+
 	$('#algoritmo-form').on('submit', function (e) {
 
 		e.preventDefault();
@@ -160,7 +597,7 @@ $(document).ready(function () {
 		console.log('fila de processos:', processosArray);
 
 		let processosParaExecutar = processosArray.length,
-			processosArrayCopia = cloneArray(processosArray); //tentativa de manter o array original intacto para a axecução de outros algoritmos
+			processosArrayCopia = clonarArray(processosArray); //tentativa de manter o array original intacto para a axecução de outros algoritmos
 
 		let porChegada = function (a, b) {
 
@@ -179,12 +616,12 @@ $(document).ready(function () {
 
 			let algoritmo = $(e.target).find('#algoritmos').val();
 
-			////////////////////////////////////////////////////////////////////////////////
+			////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			if (algoritmo == '1') {
 
 				console.log('First In, First Out!');
 
-				let processosExecucao = cloneArray(processosArrayCopia);
+				let processosExecucao = clonarArray(processosArrayCopia);
 
 				processosExecucao.sort(porChegada);
 
@@ -220,9 +657,11 @@ $(document).ready(function () {
 
 				console.log('tempo médio:', tempoMedio, 'u.t.');
 
-				processosArrayCopia = cloneArray(processosArray);
+				desenharGraficoExecucao(algoritmo, processosExecucao, tempoMedio);
+
+				processosArrayCopia = clonarArray(processosArray);
 			}
-			////////////////////////////////////////////////////////////////////////////////
+			////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			else if (algoritmo == '2') {
 
 				console.log('Smallest Job First!');
@@ -230,15 +669,34 @@ $(document).ready(function () {
 				let escalonamentoArray = [],
 					processosExecucao = [],
 					cicloAtual = 0,
-					indexAtual = null;
+					indexAtual = null
+					executandoAgora = {};
 
 				processosArrayCopia.sort(porChegada);
 
-				//processosArrayCopia[0].estado = 'executando';
-
-				//escalonamentoArray.push(processosArrayCopia[1]);
-
 				while (processosParaExecutar > 0) {
+
+					if ((indexAtual !== null) &&
+					   (processosArrayCopia[indexAtual].estado === 'executando')) {
+
+						executandoAgora = processosArrayCopia[indexAtual];
+
+						if (executandoAgora.jaExecutado === executandoAgora.tempoExecucao) {
+
+							console.log('Tick', cicloAtual);
+							console.log('Processo', executandoAgora.nome,': executando > finalizado');
+
+							executandoAgora.estado = 'finalizado';
+
+							processosExecucao.push(executandoAgora);
+
+							processosParaExecutar--;
+						}
+						else {
+
+							executandoAgora.jaExecutado++;
+						}
+					}
 
 					processosArrayCopia.forEach(function (element, index) {
 
@@ -279,24 +737,6 @@ $(document).ready(function () {
 									element.emEspera++;
 								}
 							}
-							else if (element.estado === 'executando') {
-
-								if (element.jaExecutado === element.tempoExecucao) {
-
-									console.log('Tick', cicloAtual);
-									console.log('Processo', element.nome,': executando > finalizado');
-
-									element.estado = 'finalizado';
-
-									processosExecucao.push(element);
-
-									processosParaExecutar--;
-								}
-								else {
-
-									element.jaExecutado++;
-								}
-							}
 						}
 					});
 
@@ -318,10 +758,16 @@ $(document).ready(function () {
 
 				console.log('tempo médio:', tempoMedio, 'u.t.');
 
+// <<<<<<< HEAD
+//
+// 				processosArrayCopia = cloneArray(processosArray);
+// =======
+				desenharGraficoExecucao(algoritmo, processosExecucao, tempoMedio);
 
-				processosArrayCopia = cloneArray(processosArray);
+				processosArrayCopia = clonarArray(processosArray);
+// >>>>>>> graficos
 			}
-			////////////////////////////////////////////////////////////////////////////////
+			////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			else if (algoritmo == '3') {
 
 				console.log('Round-Robin!');
@@ -334,6 +780,54 @@ $(document).ready(function () {
 				processosArrayCopia.sort(porChegada);
 
 				while (processosParaExecutar > 0) {
+// <<<<<<< HEAD
+// =======
+
+					if (indexAtual !== null) {
+
+						executandoAgora = processosArrayCopia[indexAtual];
+
+						if (processosArrayCopia[indexAtual].estado === 'executando') {
+
+							if (executandoAgora.jaExecutado >= executandoAgora.tempoExecucao) {
+
+								console.log('Tick', cicloAtual);
+								console.log('Processo', executandoAgora.nome,': executando > finalizado');
+
+								executandoAgora.estado = 'finalizado';
+
+								processosExecucao.push(jQuery.extend(true, {}, executandoAgora));
+
+								processosParaExecutar--;
+							}
+							else if (executandoAgora.jaExecutado % quantum === 0) {
+
+								console.log('Tick', cicloAtual);
+								console.log('Processo', executandoAgora.nome, ': executando > preempcao');
+
+								processosExecucao.push(jQuery.extend(true, {}, executandoAgora));
+								processosExecucao.push({nome: '_SOBRECARGA_'});
+
+								executandoAgora.estado = 'preempcao';
+							}
+							else {
+
+								executandoAgora.jaExecutado++;
+							}
+						}
+						else if (executandoAgora.estado === 'preempcao') {
+
+							console.log('Tick', cicloAtual);
+							console.log('Processo', executandoAgora.nome, ': preempcao > pronto');
+
+							executandoAgora.estado = 'pronto';
+
+							escalonamentoArray.push(executandoAgora);
+
+							executandoAgora.emEspera++;
+						}
+					}
+// >>>>>>> graficos
 
 					processosArrayCopia.forEach(function (element, index) {
 
@@ -372,47 +866,6 @@ $(document).ready(function () {
 									element.emEspera++;
 								}
 							}
-							else if (element.estado === 'executando') {
-
-								if (element.jaExecutado >= element.tempoExecucao) {
-
-									console.log('Tick', cicloAtual);
-									console.log('Processo', element.nome,': executando > finalizado');
-
-									element.estado = 'finalizado';
-
-									processosExecucao.push(jQuery.extend(true, {}, element));
-
-									processosParaExecutar--;
-								}
-								else if (element.jaExecutado % quantum === 0) {
-
-									console.log('Tick', cicloAtual);
-									console.log('Processo', element.nome, ': executando > preempcao');
-
-									processosExecucao.push(jQuery.extend(true, {}, element));
-									processosExecucao.push({nome: '_SOBRECARGA_'});
-
-									element.estado = 'preempcao';
-
-									//element.emEspera++;
-								}
-								else {
-
-									element.jaExecutado++;
-								}
-							}
-							else if (element.estado === 'preempcao') {
-
-								console.log('Tick', cicloAtual);
-								console.log('Processo', element.nome, ': preempcao > pronto');
-
-								element.estado = 'pronto';
-
-								escalonamentoArray.push(element);
-
-								element.emEspera++;
-							}
 						}
 					});
 
@@ -421,22 +874,44 @@ $(document).ready(function () {
 
 				console.log(processosExecucao);
 
-				//let tempoMedio = 0;
+				let tempoMedio = 0,
+					processosNomes = [],
+					lastExecArray = [];
 
 				processosParaExecutar = processosArray.length;
 
-				/*processosExecucao.forEach(function (element) {
+				processosExecucao.forEach(function (element, index) {
 
-					tempoMedio += element.emEspera + element.jaExecutado;
+					if ((element.nome !== '_SOBRECARGA_')) {
+
+					    if (processosNomes.indexOf(element.nome) < 0) {
+
+							processosNomes.push(element.nome);
+							lastExecArray.push(index);
+						}
+						else {
+
+							lastExecArray[processosNomes.indexOf(element.nome)] = index;
+						}
+					}
+				});
+
+				//console.log('lastExecArray:', lastExecArray);
+
+				lastExecArray.forEach(function (element) {
+
+					tempoMedio += processosExecucao[element].emEspera + processosExecucao[element].jaExecutado;
 				});
 
 				tempoMedio = tempoMedio/processosParaExecutar;
 
-				console.log('tempo médio:', tempoMedio, 'u.t.');*/
+				console.log('tempo médio:', tempoMedio, 'u.t.');
 
-				processosArrayCopia = cloneArray(processosArray);
+				desenharGraficoExecucao(algoritmo, processosExecucao, tempoMedio);
+
+				processosArrayCopia = clonarArray(processosArray);
 			}
-			////////////////////////////////////////////////////////////////////////////////
+			////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			else if (algoritmo == '4') {
 
 				console.log('Earliest Deadline First!');
@@ -518,6 +993,7 @@ $(document).ready(function () {
 								indexAux = index;
 							}
 
+// <<<<<<< HEAD
 							if ((element.prazoEstourado === null) && (cicloAtual >= element.deadline))
 							{
 								console.log('Tick', cicloAtual);
@@ -564,10 +1040,53 @@ $(document).ready(function () {
 					indexAux = null;
 				}
 
-				processosParaExecutar = processosArray.length;
+				// processosParaExecutar = processosArray.length;
+				// console.log(processosExecucao);
+			  // processosParaExecutar = processosArray.length;
+			  // processosArrayCopia = cloneArray(processosArray);
+
+				///////
 				console.log(processosExecucao);
-			  processosParaExecutar = processosArray.length;
-			  processosArrayCopia = cloneArray(processosArray);
+
+				let tempoMedio = 0,
+					processosNomes = [],
+					lastExecArray = [];
+
+				processosParaExecutar = processosArray.length;
+
+				processosExecucao.forEach(function (element, index) {
+
+					if ((element.nome !== '_SOBRECARGA_')) {
+
+							if (processosNomes.indexOf(element.nome) < 0) {
+
+							processosNomes.push(element.nome);
+							lastExecArray.push(index);
+						}
+						else {
+
+							lastExecArray[processosNomes.indexOf(element.nome)] = index;
+						}
+					}
+				});
+
+				lastExecArray.forEach(function (element) {
+
+					tempoMedio += processosExecucao[element].emEspera + processosExecucao[element].jaExecutado;
+				});
+
+				tempoMedio = tempoMedio/processosParaExecutar;
+
+				console.log('tempo médio:', tempoMedio, 'u.t.');
+
+				desenharGraficoExecucao(algoritmo, processosExecucao, tempoMedio);
+
+				processosArrayCopia = clonarArray(processosArray);
+
+				// =======
+				// 				console.log('tempo médio:', tempoMedio, 'u.t.');
+				// 				processosArrayCopia = clonarArray(processosArray);
+				// >>>>>>> graficos
 			}
 		}
 	});
