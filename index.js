@@ -333,15 +333,9 @@ $(document).ready(function () {
 
 				processosArrayCopia.sort(porChegada);
 
-				//processosArrayCopia[0].estado = 'executando';
-
-				//escalonamentoArray.push(processosArrayCopia[1]);
-
 				while (processosParaExecutar > 0) {
 
 					processosArrayCopia.forEach(function (element, index) {
-
-						//console.log('element:', element);
 
 						if ((element.chegada <= cicloAtual)) {
 
@@ -354,9 +348,6 @@ $(document).ready(function () {
 
 								escalonamentoArray.push(element);
 
-								//escalonamentoArray.sort(porTempoExecucao);
-
-								//element.emEspera++;
 							}
 							else if (element.estado === 'pronto') {
 
@@ -453,41 +444,38 @@ $(document).ready(function () {
 				let escalonamentoArray = [],
 			    processosExecucao = [],
 			    cicloAtual = 0,
-			    indexAtual = null;
+			    indexAtual = null,
+					indexAux = null;
 
 			  processosArrayCopia.sort(porChegada);
 
-				while (processosParaExecutar > 0) {
-
-					if(indexAtual!==null){
-
+				while (processosParaExecutar > 0)
+				{
+					if(indexAtual !== null)
+					{
 						executandoAgora = processosArrayCopia[indexAtual];
-						if (executandoAgora.estado === 'executando') {
-							if (executandoAgora.jaExecutado >= executandoAgora.tempoExecucao) {
+						if (executandoAgora.estado === 'executando')
+						{
+							if (executandoAgora.jaExecutado >= executandoAgora.tempoExecucao)
+							{
 								console.log('Tick', cicloAtual);
 								console.log('Processo', executandoAgora.nome,': executando > finalizado');
 								executandoAgora.estado = 'finalizado';
-								if(executandoAgora.prazoEstourado !== true){
+								if(executandoAgora.prazoEstourado !== true)
+								{
 									console.log('Processo', executandoAgora.nome,'executou dentro do prazo!');
 									executandoAgora.prazoEstourado = false;
 								}
 								processosExecucao.push(jQuery.extend(true, {}, executandoAgora));
 								processosParaExecutar--;
-								// processosArrayCopia.forEach(function (element, index){
-								// 	if(element.chegada == cicloAtual+1){
-								// 		console.log('Tick', cicloAtual+1);
-								// 		console.log('Processo', element.nome,': criado > pronto');
-								// 		element.estado = 'pronto';
-								// 		escalonamentoArray.push(element);
-								// 	}
-								// });
 								escalonamentoArray.sort(porDeadline);
 							}
 							else {
 								executandoAgora.jaExecutado++;
 							}
 						}
-						else if (executandoAgora.estado === 'preempcao') {
+						else if (executandoAgora.estado === 'preempcao')
+						{
 							console.log('Tick', cicloAtual);
 							console.log('Processo', executandoAgora.nome, ': preempcao > pronto');
 							executandoAgora.estado = 'pronto';
@@ -499,68 +487,36 @@ $(document).ready(function () {
 
 					processosArrayCopia.forEach(function (element, index)
 					{
-						if(element.chegada <= cicloAtual){
-
-							if(element.estado === 'criado'){
+						if(element.chegada <= cicloAtual)
+						{
+							if(element.estado === 'criado')
+							{
 								console.log('Tick', cicloAtual);
 								console.log('Processo', element.nome,': criado > pronto');
 								element.estado = 'pronto';
 								escalonamentoArray.push(element);
 								escalonamentoArray.sort(porDeadline);
-								if((indexAtual !== null) &&
-									(element.deadline < processosArrayCopia[indexAtual].deadline)&&
-									(element.nome === escalonamentoArray[0].nome))
-								{
-									  console.log('Tick', cicloAtual);
-				            console.log('Processo', processosArrayCopia[indexAtual].nome, ': executando > preempcao');
-				            processosExecucao.push(jQuery.extend(true, {}, processosArrayCopia[indexAtual]));
-				            processosExecucao.push({nome: '_SOBRECARGA_'});
-				            processosArrayCopia[indexAtual].estado = 'preempcao';
-								}
+
 							}
 
-							else if (element.estado==='pronto') {
-								if (((indexAtual === null) ||
-									 ((processosArrayCopia[indexAtual].estado === 'finalizado') ||
-									 (processosArrayCopia[indexAtual].estado === 'pronto'))) &&
-									 (escalonamentoArray[0].nome === element.nome))
-								{
-									console.log('Tick', cicloAtual);
-									console.log('Processo', element.nome,': pronto > executando');
-									indexAtual = index;
-									escalonamentoArray.splice(0, 1);
-									element.estado = 'executando';
-									element.jaExecutado++;
-								}
-								else {
+							else if (element.estado==='pronto')
+							{
+								// if ((indexAtual === null) ||
+								// 	//  ((processosArrayCopia[indexAtual].estado === 'finalizado') ||
+								// 	//  (processosArrayCopia[indexAtual].estado === 'pronto'))) &&
+								// 	 (escalonamentoArray[0].nome === element.nome))
+								// {
+									// indexAux = index;
+								// }
+								// else {
 									element.emEspera++;
-								}
+								// }
 							}
 
-							// else if (element.estado === 'executando') {
-			        //   if (element.jaExecutado >= element.tempoExecucao) {
-			        //     console.log('Tick', cicloAtual);
-			        //     console.log('Processo', element.nome,': executando > finalizado');
-			        //     element.estado = 'finalizado';
-							// 		if(element.prazoEstourado !== true){
-							// 			console.log('Processo', element.nome,'executou dentro do prazo!');
-							// 			element.prazoEstourado = false;
-							// 		}
-			        //     processosExecucao.push(jQuery.extend(true, {}, element));
-			        //     processosParaExecutar--;
-			        //   }
-			        //   else {
-			        //     element.jaExecutado++;
-			        //   }
-			        // }
-							//
-			        // else if (element.estado === 'preempcao') {
-			        //   console.log('Tick', cicloAtual);
-			        //   console.log('Processo', element.nome, ': preempcao > pronto');
-			        //   element.estado = 'pronto';
-			        //   escalonamentoArray.push(element);
-			        //   element.emEspera++;
-			        // }
+							if((escalonamentoArray.length > 0) && (escalonamentoArray[0].nome === element.nome))
+							{
+								indexAux = index;
+							}
 
 							if ((element.prazoEstourado === null) && (cicloAtual >= element.deadline))
 							{
@@ -570,47 +526,42 @@ $(document).ready(function () {
 							}
 						}
 					});
-					// processosArrayCopia.forEach(function (element, index)
-					// {
-					// 	if(element.chegada <= cicloAtual){
-					//
-					// 		if((indexAtual !== null) &&
-					// 				(element.deadline < processosArrayCopia[indexAtual].deadline))
-					// 			{
-					// 				  console.log('Tick', cicloAtual);
-				  //           console.log('Processo', processosArrayCopia[indexAtual].nome, ': executando > preempcao');
-				  //           processosExecucao.push(jQuery.extend(true, {}, processosArrayCopia[indexAtual]));
-				  //           processosExecucao.push({nome: '_SOBRECARGA_'});
-				  //           processosArrayCopia[indexAtual].estado = 'preempcao';
-					// 			}
-					// 		}
-					// 		if (element.estado==='pronto') {
-					// 			if (((indexAtual === null) ||
-					// 				 ((processosArrayCopia[indexAtual].estado === 'finalizado') ||
-					// 				 (processosArrayCopia[indexAtual].estado === 'pronto'))) &&
-					// 				 (escalonamentoArray[0].nome === element.nome))
-					// 			{
-					// 				console.log('Tick', cicloAtual);
-					// 				console.log('Processo', element.nome,': pronto > executando');
-					// 				indexAtual = index;
-					// 				escalonamentoArray.splice(0, 1);
-					// 				element.estado = 'executando';
-					// 				element.jaExecutado++;
-					// 			}
-					// 			else {
-					// 				element.emEspera++;
-					// 			}
-					// 	}
-					//
-					// 	if ((element.prazoEstourado === null) && (cicloAtual >= element.deadline))
-					// 	{
-					// 		console.log('Tick', cicloAtual);
-					// 		console.log('Processo', element.nome, 'estourou seu prazo');
-					// 		element.prazoEstourado = true;
-					// 	}
-					// });
-					// if((index===null) && ()//parei aqui
+					///////
+					// console.log(escalonamentoArray);
+					// console.log('indexAux:', indexAux);
+
+					if((indexAtual === null) && (escalonamentoArray.length > 0))
+					{
+						console.log('Tick', cicloAtual);
+						console.log('Processo', escalonamentoArray[0].nome,': pronto > executando');
+						indexAtual = indexAux;
+						escalonamentoArray[0].estado = 'executando';
+						escalonamentoArray[0].jaExecutado++;
+						escalonamentoArray.splice(0, 1);
+					}
+					else
+					if((indexAtual !== null) && (escalonamentoArray.length > 0) &&
+					((processosArrayCopia[indexAtual].estado === 'finalizado') || (processosArrayCopia[indexAtual].estado === 'pronto')))
+					{
+						console.log('Tick', cicloAtual);
+						console.log('Processo', escalonamentoArray[0].nome,': pronto > executando');
+						indexAtual = indexAux;
+						escalonamentoArray[0].estado = 'executando';
+						escalonamentoArray[0].jaExecutado++;
+						escalonamentoArray.splice(0, 1);
+					}
+					else
+					if((indexAtual !== null) && (escalonamentoArray.length > 0) && (escalonamentoArray[0].deadline < processosArrayCopia[indexAtual].deadline))
+					{
+						console.log('Tick', cicloAtual);
+						console.log('Processo', processosArrayCopia[indexAtual].nome, ': executando > preempcao');
+						processosExecucao.push(jQuery.extend(true, {}, processosArrayCopia[indexAtual]));
+						processosExecucao.push({nome: '_SOBRECARGA_'});
+						processosArrayCopia[indexAtual].estado = 'preempcao';
+					}
+
 					cicloAtual++;
+					indexAux = null;
 				}
 
 				processosParaExecutar = processosArray.length;
